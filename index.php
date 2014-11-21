@@ -30,7 +30,7 @@ if (isset($_GET['async'])) {
               $.getJSON '?async=x:NYSEARCA,p:40Y,i:86400,q:' + symbol, (json)->
                 chart.addSeries
                   name: json['n'][0]
-                  data: _.zip _.map(json['t'], (t)-> Date.parse(t)), json['v'][0]
+                  data: _.zip _.map(json['t'], (t)-> Date.parse t), json['v'][0]
     </script>
   </body>
 </html>
