@@ -9,10 +9,9 @@
   </head>
   <body>
     <div id="chart"></div>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/4.6.1/lodash.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highcharts/4.2.3/highcharts.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highcharts/4.2.3/themes/grid.js"></script>
+    <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+    <script src="//code.highcharts.com/4.2/highcharts.js"></script>
+    <script src="//code.highcharts.com/4.2/themes/grid.js"></script>
     <script>
       $('#chart').highcharts({
         chart: { zoomType: 'xy' },
