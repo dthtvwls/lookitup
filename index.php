@@ -2,8 +2,10 @@
 <html>
   <head>
     <title>Fund Performance</title>
-    <link href="//cdnjs.cloudflare.com/ajax/libs/normalize/4.0.0/normalize.min.css" rel="stylesheet">
-    <style>html, body, #chart { height: 100%; }</style>
+    <style>
+      html, body, #chart { height: 100%; }
+      body { margin: 0; }
+    </style>
   </head>
   <body>
     <div id="chart"></div>
