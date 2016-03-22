@@ -25,19 +25,18 @@ $symbols = [
 if (array_key_exists($_SERVER['QUERY_STRING'], $symbols)) {
     require __DIR__ . '/vendor/autoload.php';
 
-    $redis = isset($_ENV['REDIS_URL']) ? new Predis\Client($_ENV['REDIS_URL']) : new Predis\Client;
-
+    $redis  = isset($_ENV['REDIS_URL']) ? new Predis\Client($_ENV['REDIS_URL']) : new Predis\Client;
     $symbol = $_SERVER['QUERY_STRING'];
-
-    $data = $redis->get($symbol);
+    $data   = $redis->get($symbol);
 
     if (!$data) {
       $data = json_decode(json_decode(explode("\n", file_get_contents('http://www.google.com/async/finance_chart_data?async=x:MUTF,p:40Y,i:86400,q:' . $symbol))[1])->tnv->value);
-      $data = json_encode(array_map(null, array_map(function ($t) { return strtotime($t); }, $data->t), $data->v[0]));
+      $data = gzencode(json_encode(array_map(null, array_map(function ($t) { return strtotime($t) * 1000; }, $data->t), $data->v[0])), 9);
       $redis->set($symbol, $data);
       $redis->expire($symbol, 86400);
     }
 
+    header('Content-Encoding: gzip');
     die($data);
 }
 ?><!doctype html>
