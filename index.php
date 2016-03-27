@@ -22,18 +22,26 @@ $symbols = [
   'VWNFX' => 'Windsor Ii Inv'
 ];
 
-if (array_key_exists($_SERVER['QUERY_STRING'], $symbols)) {
+$symbol = $_SERVER['QUERY_STRING'];
+
+if (array_key_exists($symbol, $symbols)) {
     require __DIR__ . '/vendor/autoload.php';
 
-    $redis  = isset($_ENV['REDIS_URL']) ? new Predis\Client($_ENV['REDIS_URL']) : new Predis\Client;
-    $symbol = $_SERVER['QUERY_STRING'];
-    $data   = $redis->get($symbol);
+    $client = new Predis\Client($_ENV['REDIS_URL']);
+    $data   = $client->get($symbol);
 
-    if (!$data) {
-      $data = json_decode(json_decode(explode("\n", file_get_contents('http://www.google.com/async/finance_chart_data?async=x:MUTF,p:40Y,i:86400,q:' . $symbol))[1])->tnv->value);
-      $data = gzencode(json_encode(array_map(null, array_map(function ($t) { return strtotime($t) * 1000; }, $data->t), $data->v[0])), 9);
-      $redis->set($symbol, $data);
-      $redis->expire($symbol, 86400);
+    if ($data === null) {
+      $data = json_decode(json_decode(explode("\n", file_get_contents(
+        "http://www.google.com/async/finance_chart_data?async=x:MUTF,p:40Y,i:86400,q:$symbol"
+      ))[1])->tnv->value);
+
+      $data = gzencode(json_encode(array_map(null,
+        array_map(function ($t) { return strtotime($t) * 1000; }, $data->t),
+        array_map(function ($v) use ($data) { return round($v / $data->v[0][0], 2); }, $data->v[0])
+      )), 9);
+
+      $client->set($symbol, $data);
+      $client->expire($symbol, 86400);
     }
 
     header('Content-Encoding: gzip');
@@ -49,12 +57,11 @@ if (array_key_exists($_SERVER['QUERY_STRING'], $symbols)) {
     </style>
   </head>
   <body>
-    <div id="chart"></div>
     <script src="//code.jquery.com/jquery-2.2.2.min.js"></script>
     <script src="//code.highcharts.com/4.2/highcharts.js"></script>
     <script src="//code.highcharts.com/4.2/themes/grid.js"></script>
     <script>
-      $('#chart').highcharts({
+      $('body').highcharts({
         credits: { enabled: false },
         title: null,
         tooltip: { valueDecimals: 2 },
@@ -64,8 +71,7 @@ if (array_key_exists($_SERVER['QUERY_STRING'], $symbols)) {
           zoomType: 'xy',
           events: {
             load: function () {
-              var chart = this;
-              var symbols = <?php echo json_encode($symbols); ?>;
+              var chart = this, symbols = <?php echo json_encode($symbols); ?>;
               Object.keys(symbols).forEach(function (symbol) {
                 $.getJSON('?' + symbol, function (data) {
                   chart.addSeries({ name: symbols[symbol], data: data });
