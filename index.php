@@ -9,11 +9,11 @@ if (preg_match('/^[A-Z]{1,5}$/', $symbol)) {
   $data = $client->get($symbol);
 
   if ($data === null) {
-    $matches = json_decode(file_get_contents("http://www.google.com/finance/match?q=$symbol"))->matches;
+    $matches = json_decode(file_get_contents("https://www.google.com/finance/match?q=$symbol"))->matches;
 
-    if (count($matches)) {
+    if (count($matches) > 0) {
       $data = json_decode(json_decode(explode("\n", file_get_contents(
-        "http://www.google.com/async/finance_chart_data?async=x:{$matches[0]->e},p:40Y,i:86400,q:$symbol"
+        "https://www.google.com/async/finance_chart_data?async=x:{$matches[0]->e},p:40Y,i:86400,q:$symbol"
       ))[1])->tnv->value);
 
       // array_map with null first argument works like array zip in more normal languages
@@ -30,6 +30,6 @@ if (preg_match('/^[A-Z]{1,5}$/', $symbol)) {
 
   header('Content-Encoding: gzip');
   header('Access-Control-Allow-Origin: *');
-  // add_header Access-Control-Allow-Headers X-Requested-With;
+
   echo $data;
 }
