@@ -8,7 +8,7 @@ function matches($q) {
 if (isset($_GET['q'])) {
   echo json_encode(matches($_GET['q']));
 
-} else if (preg_match('/^[A-Z]{1,5}$/', $symbol) {
+} else if (preg_match('/^[A-Z]{1,5}$/', $symbol)) {
   require __DIR__ . '/vendor/autoload.php';
 
   $client = new Predis\Client($_ENV['REDIS_URL']);
