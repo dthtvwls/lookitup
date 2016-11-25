@@ -1,7 +1,14 @@
 <?php
 $symbol = $_SERVER['QUERY_STRING'];
 
-if (preg_match('/^[A-Z]{1,5}$/', $symbol)) {
+function matches($q) {
+  return json_decode(file_get_contents("https://www.google.com/finance/match?q=$q"))->matches;
+}
+
+if (isset($_GET['q'])) {
+  echo json_encode(matches($_GET['q']));
+
+} else if (preg_match('/^[A-Z]{1,5}$/', $symbol) {
   require __DIR__ . '/vendor/autoload.php';
 
   $client = new Predis\Client($_ENV['REDIS_URL']);
@@ -9,7 +16,7 @@ if (preg_match('/^[A-Z]{1,5}$/', $symbol)) {
   $data = $client->get($symbol);
 
   if ($data === null) {
-    $matches = json_decode(file_get_contents("https://www.google.com/finance/match?q=$symbol"))->matches;
+    $matches = matches($symbol);
 
     if (count($matches) > 0) {
       $data = json_decode(json_decode(explode("\n", file_get_contents(
