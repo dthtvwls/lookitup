@@ -36,7 +36,9 @@ if (isset($_GET['q'])) {
   }
 
   header('Content-Encoding: gzip');
-  header('Access-Control-Allow-Origin: *');
+  // header('Access-Control-Allow-Origin: *');
 
   echo $data;
+} else {
+  echo file_get_contents('index.html');
 }

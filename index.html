@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>lookitup</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/jquery.tokeninput/1.6.0/styles/token-input.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/jquery.tokeninput/1.6.0/styles/token-input-facebook.css">
+    <style>
+      ul.token-input-list-facebook {
+        width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <input id="q">
+    <div id="chart"></div>
+
+    <script src="https://code.highcharts.com/4.2/highcharts.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/jquery.tokeninput/1.6.0/jquery.tokeninput.js"></script>
+    <script>
+      $(function () {
+        const chart = new Highcharts.Chart({
+          credits: { enabled: false },
+          title: null,
+          tooltip: { valueDecimals: 2 },
+          xAxis: { type: 'datetime' },
+          yAxis: { title: null },
+          chart: {
+            renderTo: 'chart',
+            zoomType: 'xy'
+          }
+        })
+
+        $('#q').tokenInput('/', {
+          theme: 'facebook',
+          preventDuplicates: true,
+          propertyToSearch: 't',
+          resultsFormatter: function (item) { return '<li><p>' + item.t + ' - ' + item.e + '<br>' + item.n + '</p></li>' },
+          tokenFormatter: function (item) { return '<li>' + item.t + '</li>' },
+          onAdd: function (item) {
+            const xhr = new XMLHttpRequest()
+            xhr.addEventListener('load', function () { chart.addSeries({ name: item.t, data: JSON.parse(xhr.responseText) }) })
+            xhr.open('GET', '/?' + item.t)
+            xhr.send()
+          },
+          onDelete: function (item) { chart.series.find(function (series) { return series.name === item.t }).remove() }
+        })
+      })
+    </script>
+  </body>
+</html>
