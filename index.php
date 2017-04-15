@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set('UTC');
+
 $symbol = $_SERVER['QUERY_STRING'];
 
 function matches($q) {
@@ -26,7 +28,7 @@ if (isset($_GET['q'])) {
       // array_map with null first argument works like array zip in more normal languages
       $data = gzencode(json_encode(array_map(null,
         // Highcharts doesn't understand the time unless we give it unix timestamp with milliseconds
-        array_map(function ($t) { return @strtotime($t) * 1000; }, $data->t),
+        array_map(function ($t) { return strtotime($t) * 1000; }, $data->t),
         $data->v[0]
       )), 9);
 
@@ -36,9 +38,8 @@ if (isset($_GET['q'])) {
   }
 
   header('Content-Encoding: gzip');
-  // header('Access-Control-Allow-Origin: *');
-
   echo $data;
+
 } else {
   echo file_get_contents('index.html');
 }
