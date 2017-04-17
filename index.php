@@ -1,8 +1,4 @@
 <?php
-date_default_timezone_set('UTC');
-
-$symbol = $_SERVER['QUERY_STRING'];
-
 function matches($q) {
   return json_decode(file_get_contents("https://www.google.com/finance/match?q=$q"))->matches;
 }
@@ -10,11 +6,13 @@ function matches($q) {
 if (isset($_GET['q'])) {
   echo json_encode(matches($_GET['q']));
 
-} else if (preg_match('/^[A-Z]{1,5}$/', $symbol)) {
+} else if (array_key_exists('QUERY_STRING', $_SERVER) && preg_match('/^[A-Z]{1,5}$/', $_SERVER['QUERY_STRING'])) {
   require __DIR__ . '/vendor/autoload.php';
 
-  $client = new Predis\Client($_ENV['REDIS_URL']);
+  date_default_timezone_set('UTC');
 
+  $client = new Predis\Client(array_key_exists('REDIS_URL', $_ENV) ? $_ENV['REDIS_URL'] : null);
+  $symbol = $_SERVER['QUERY_STRING'];
   $data = $client->get($symbol);
 
   if ($data === null) {
