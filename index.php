@@ -1,6 +1,10 @@
 <?php
+function format_pair($timestamp, $value) {
+  return [$timestamp * 1000, floatval($value)];
+}
+
 if (isset($_GET['q'])) {
-  echo json_encode(json_decode(file_get_contents("https://www.google.com/finance/match?q=${_GET['q']}"))->matches);
+  echo json_encode(json_decode(file_get_contents("https://finance.google.com/finance/match?q=${_GET['q']}"))->matches);
 
 } else if (isset($_SERVER['QUERY_STRING']) && preg_match('/^[A-Z]{1,5}$/', $_SERVER['QUERY_STRING'])) {
   require __DIR__ . '/vendor/autoload.php';
@@ -12,18 +16,17 @@ if (isset($_GET['q'])) {
   $data = $client->get($symbol);
 
   if ($data === null) {
-    $i = 604800;
-    $file = file_get_contents("https://www.google.com/finance/getprices?i=$i&p=40Y&f=d,c&q=${_SERVER['QUERY_STRING']}");
+    $interval = 604800;
+    $file = file_get_contents("https://finance.google.com/finance/getprices?i=$interval&p=40Y&f=d,c&q=${_SERVER['QUERY_STRING']}");
     $output = [];
 
     foreach (explode("\n", $file) as $line) {
-      if ($line[0] === 'a') {
-        $pair = explode(',', $line);
-        $anchor = ltrim($pair[0], 'a');
-        array_push($output, [$anchor * 1000, intval($pair[1])]);
-      } else if (is_numeric($line[0])) {
-        $pair = explode(',', $line);
-        array_push($output, [($anchor + $pair[0] * $i) * 1000, intval($pair[1])]);
+      [$day, $close] = explode(',', $line);
+      if ($day[0] === 'a') {
+        $anchor = intval(ltrim($day, 'a'));
+        $output[] = format_pair($anchor, $close);
+      } else if (is_numeric($day[0])) {
+        $output[] = format_pair($anchor + intval($day) * $interval, $close);
       }
     }
 
